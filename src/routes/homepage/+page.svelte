@@ -14,6 +14,7 @@
   let intervalId = null;
   let isThinking = false;
   let data;
+  let isPlaying = false;
 
   $: {
     if (intervalId !== null) {
@@ -42,12 +43,13 @@
 
   async function promptToOpenAI() {
     isThinking = true;
+
     const response = await fetch("/homepage", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ transcript: transcript }),
+      body: JSON.stringify({ transcript: "groningen naar amsterdam" }),
     });
     isThinking = false;
     if (response.ok) {
@@ -69,6 +71,14 @@
       const audioPlayer = document.getElementById("audioPlayer");
       audioPlayer.src = audioUrl;
 
+      audioPlayer.onplay = () => {
+        isPlaying = true;
+      };
+
+      audioPlayer.onended = () => {
+        isPlaying = false;
+      };
+
       audioPlayer.play().catch((error) => {
         console.error("Err audio:", error);
       });
@@ -78,6 +88,7 @@
       responseText = "fout";
     }
   }
+
   onMount(() => {
     if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
       recognition = new (window.SpeechRecognition ||
@@ -135,6 +146,13 @@
       });
     }
   }
+
+  function stopAudio() {
+    const audioPlayer = document.getElementById("audioPlayer");
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+    isPlaying = false;
+  }
 </script>
 
 <head>
@@ -165,18 +183,20 @@
     />
 
     <p class="responseTekst">{responseText}</p>
-
+    {#if isPlaying}
+      <button class="stopButton" on:click={stopAudio}>Stop Audio</button>
+    {/if}
     <audio id="audioPlayer" controls hidden />
   </div>
 
-  <div class="wrapper">
-    <div class="route-overview">
-      {#if data}
-        <h2>
-          <i class="fas fa-route"></i>
-          {data.route.vertrekAdres} <i class="fas fa-arrow-right"></i>
-          {data.route.aankomstAdres}
-        </h2>
+  <div class="route-overview">
+    {#if data}
+      <h2 class="center-text">
+        <i class="fas fa-route"></i>
+        {data.route.vertrekAdres} <i class="fas fa-arrow-right"></i>
+        {data.route.aankomstAdres}
+      </h2>
+      <div class="time-container">
         {#if data.route.vertrektijd}
           <p>
             <i class="fas fa-clock"></i>
@@ -185,71 +205,66 @@
         {/if}
         {#if data.route.aankomsttijd}
           <p>
-            <i class="fas fa-clock"></i>
+            <i class="fas fa-arrow-right"></i>
             {data.route.aankomsttijd}
           </p>
         {/if}
-        {#if data.route.totaleAfstand}
-          <p>
-            <i class="fas fa-road"></i>
-            {data.route.totaleAfstand}
-          </p>
-        {/if}
-        {#if data.route.totaleDuur}
-          <p>
-            <i class="fas fa-hourglass-half"></i>
-            {data.route.totaleDuur}
-          </p>
-        {/if}
+      </div>
 
-        {#if data.route.stappen && data.route.stappen.length > 0}
-          {#each data.route.stappen as stap, i (i)}
-            <div class="step-card">
-              {#if stap.type}
-                <p><i class="fas fa-directions"></i> {stap.type}</p>
+      {#if data.route.totaleDuur}
+        <p>
+          <i class="fas fa-hourglass-half"></i>
+          {data.route.totaleDuur}
+        </p>
+      {/if}
+
+      {#if data.route.stappen && data.route.stappen.length > 0}
+        {#each data.route.stappen as stap, i (i)}
+          <div class="step-card">
+            {#if stap.type}
+              <p><i class="fas fa-directions"></i> {stap.type}</p>
+            {/if}
+            <div class="time-location">
+              {#if stap.vertrek || stap.vertrektijd}
+                <p>
+                  <i class="fas fa-map-marker-alt"></i>
+                  {stap.vertrek}
+                  {#if stap.vertrektijd}
+                    {stap.vertrektijd}
+                  {/if}
+                </p>
               {/if}
-              {#if stap.vertrek}
-                <p><i class="fas fa-map-marker-alt"></i> {stap.vertrek}</p>
-              {/if}
-              {#if stap.vertrektijd}
-                <p><i class="fas fa-clock"></i> {stap.vertrektijd}</p>
-              {/if}
-              {#if stap.aankomst}
+              {#if stap.aankomst || stap.aankomsttijd}
                 <p>
                   <i class="fas fa-map-marker-alt"></i>
                   {stap.aankomst}
-                </p>
-              {/if}
-              {#if stap.aankomsttijd}
-                <p>
-                  <i class="fas fa-clock"></i>
-                  {stap.aankomsttijd}
-                </p>
-              {/if}
-              {#if stap.afstand}
-                <p><i class="fas fa-road"></i> {stap.afstand}</p>
-              {/if}
-              {#if stap.duur}
-                <p><i class="fas fa-hourglass-half"></i> {stap.duur}</p>
-              {/if}
-              {#if stap.instructie}
-                <p>
-                  <i class="fas fa-info-circle"></i>
-                  {stap.instructie}
+                  {#if stap.aankomsttijd}
+                    {stap.aankomsttijd}
+                  {/if}
                 </p>
               {/if}
             </div>
-          {/each}
-        {/if}
 
-        {#if data.route.waarschuwingen && data.route.waarschuwingen.length > 0}
-          <ul>
-            {#each data.route.waarschuwingen as waarschuwing, i (i)}
-              <li><i class="fas fa-exclamation-circle"></i> {waarschuwing}</li>
-            {/each}
-          </ul>
-        {/if}
+            {#if stap.duur}
+              <p><i class="fas fa-hourglass-half"></i> {stap.duur}</p>
+            {/if}
+            {#if stap.instructie}
+              <p>
+                <i class="fas fa-info-circle"></i>
+                {stap.instructie}
+              </p>
+            {/if}
+          </div>
+        {/each}
       {/if}
-    </div>
+
+      {#if data.route.waarschuwingen && data.route.waarschuwingen.length > 0}
+        <ul>
+          {#each data.route.waarschuwingen as waarschuwing, i (i)}
+            <li><i class="fas fa-exclamation-circle"></i> {waarschuwing}</li>
+          {/each}
+        </ul>
+      {/if}
+    {/if}
   </div>
 </div>
