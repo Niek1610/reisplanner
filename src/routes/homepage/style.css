@@ -9,6 +9,7 @@
 
 
 .center {
+    margin-top: 2.5%;
     margin-left: auto;
     margin-right: auto;
     display: flex;
@@ -17,7 +18,7 @@
     align-items: center;
     height: 100%;
     flex-direction: column;
-    min-height: 400px;
+    min-height: 500px;
     
 }
 
@@ -134,7 +135,7 @@
 }
 
 .route-overview {
-    margin-top: 10%;
+    
     overflow-y: scroll;
     width: 100vw;
 
@@ -177,4 +178,11 @@
     margin-bottom: 10px;
 
 
+  }
+
+  .info{
+    color: #ffffffbb;
+    font-size: 14px;
+    font-weight: light;
+    text-align: center;
   }

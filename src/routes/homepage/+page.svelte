@@ -103,8 +103,9 @@
           .map((result) => result.transcript)
           .join("");
         clearTimeout(silenceTimer);
-        silenceTimer = setTimeout(stopListening, 1500);
+        silenceTimer = setTimeout(stopListening, 2000);
       };
+
       recognition.onerror = (event) => {
         console.log("err:", event.error);
       };
@@ -187,10 +188,19 @@
       <button class="stopButton" on:click={stopAudio}>Stop Audio</button>
     {/if}
     <audio id="audioPlayer" controls hidden />
+    <br />
+
+    {#if data == null}
+      <p class="info">
+        Als je op de knop drukt, vermeld dan de begin- en eindbestemming in de
+        vorm: "beginbestemming NAAR eindbestemming". Het woord "NAAR" is
+        essentieel voor het systeem om de route correct te interpreteren.
+      </p>
+    {/if}
   </div>
 
-  <div class="route-overview">
-    {#if data}
+  {#if data != null}
+    <div class="route-overview">
       <h2 class="center-text">
         <i class="fas fa-route"></i>
         {data.route.vertrekAdres} <i class="fas fa-arrow-right"></i>
@@ -265,6 +275,6 @@
           {/each}
         </ul>
       {/if}
-    {/if}
-  </div>
+    </div>
+  {/if}
 </div>
