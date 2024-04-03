@@ -44,49 +44,60 @@
   async function promptToOpenAI() {
     isThinking = true;
 
-    const response = await fetch("/homepage", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ transcript: "groningen naar amsterdam" }),
-    });
-    isThinking = false;
-    if (response.ok) {
-      data = await response.json();
-      const audioBase64 = data.audio;
-      const route = data.route;
+    if (transcript == "")
+      console.log("No transcript is set. got: " + transcript);
 
-      // Convert the Base64 string back to a Blob
-      const byteCharacters = atob(audioBase64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const audioBlob = new Blob([byteArray], { type: "audio/mpeg" });
+    let response;
 
-      console.log("Audio bestand", audioBlob); // Log the audio blob
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audioPlayer = document.getElementById("audioPlayer");
-      audioPlayer.src = audioUrl;
-
-      audioPlayer.onplay = () => {
-        isPlaying = true;
-      };
-
-      audioPlayer.onended = () => {
-        isPlaying = false;
-      };
-
-      audioPlayer.play().catch((error) => {
-        console.error("Err audio:", error);
+    try {
+      response = await fetch("/homepage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          transcript: transcript,
+        }),
       });
 
-      console.log("Ontvangen route:", route); // Log the route
-    } else {
-      responseText = "fout";
+      if (!response.ok) {
+        responseText = `Er is een fout opgetreden (${response.status})`;
+
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      return console.error("An error occurred:", error);
     }
+
+    isThinking = false;
+
+    data = await response.json();
+    const audioBase64 = data.audio;
+    const route = data.route;
+
+    const byteCharacters = atob(audioBase64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const audioBlob = new Blob([byteArray], { type: "audio/mpeg" });
+
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audioPlayer = document.getElementById("audioPlayer");
+    audioPlayer.src = audioUrl;
+
+    audioPlayer.onplay = () => {
+      isPlaying = true;
+    };
+
+    audioPlayer.onended = () => {
+      isPlaying = false;
+    };
+
+    audioPlayer.play().catch((error) => {
+      console.error("Err audio:", error);
+    });
   }
 
   onMount(() => {
@@ -137,7 +148,6 @@
 
   async function stopListening() {
     if (isListening) {
-      console.log("test");
       recognition.stop();
       isListening = false;
       clearInterval(startListeningInterval);
