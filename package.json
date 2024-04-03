@@ -19,6 +19,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sveltejs/adapter-vercel": "^5.2.0",
 		"ai": "^3.0.13",
 		"dotenv": "^16.4.5",
 		"express": "^4.19.1",
