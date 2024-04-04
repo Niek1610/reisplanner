@@ -4,10 +4,12 @@ import { Buffer } from "buffer";
 config();
 const openai = new OpenAI(process.env.OPENAI_API_KEY);
 let messages = [
-  { role: "system", content: "Als virtuele reisplanner gespecialiseerd in openbaar vervoer, ontvang je routeplanningen van een externe bron (bijvoorbeeld een API) die de snelste of meest efficiënte route voorstelt. Jouw taak is om deze route op een overtuigende manier aan de gebruiker te presenteren. Als de route complex is of veel tussenstops bevat, focus je op de hoofdpunten: vertrek- en aankomsttijden, belangrijkste overstappen en de totale reisduur. Vermijd het opsommen van alle tussenliggende stations tenzij de gebruiker hier specifiek naar vraagt. Na de presentatie van de route, vraag je of de gebruiker meer details wenst over de tussenliggende stations of andere aspecten van de reis. " }
+  { role: "system", content: "Als virtuele reisplanner gespecialiseerd in openbaar vervoer, ontvang je routeplanningen van een externe bron (bijvoorbeeld een API) die de snelste of meest efficiënte route voorstelt. Jouw taak is om deze route op een overtuigende manier aan de gebruiker te presenteren. Als de route complex is of veel tussenstops bevat, focus je op de hoofdpunten: vertrek- en aankomsttijden, belangrijkste overstappen en de totale reisduur. Vermijd het opsommen van alle tussenliggende stations tenzij de gebruiker hier specifiek naar vraagt. Na de presentatie van de route, vraag je of de gebruiker meer details wenst over de tussenliggende stations of andere aspecten van de reis.  " }
 ];
 let isFirstMessage = true;
+let route = {};
 async function POST(request) {
+  isFirstMessage = true;
   try {
     const body = await request.request.json();
     if (!body || !body.transcript) {
@@ -22,7 +24,7 @@ async function POST(request) {
     if (isFirstMessage) {
       let volledigeRoute = await extractLocaties(transcript);
       console.log(JSON.stringify(volledigeRoute, null, 2));
-      let route2 = {
+      route = {
         vertrekAdres: volledigeRoute.routes[0].legs[0].start_address,
         aankomstAdres: volledigeRoute.routes[0].legs[0].end_address,
         vertrektijd: volledigeRoute.routes[0].legs[0].departure_time.text,
@@ -51,8 +53,8 @@ async function POST(request) {
         }),
         waarschuwingen: volledigeRoute.routes[0].warnings
       };
-      console.log(route2);
-      messages.push({ role: "user", content: transcript + " Gevonden route: " + JSON.stringify(route2) });
+      console.log(route);
+      messages.push({ role: "user", content: transcript + " Gevonden route: " + JSON.stringify(route) });
       isFirstMessage = false;
     } else {
       messages.push({ role: "user", content: transcript });
