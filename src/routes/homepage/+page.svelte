@@ -24,7 +24,7 @@
 
     if (isListening) {
       intervalId = setInterval(() => {
-        responseText = "Aan het luisteren" + ".".repeat(currentDots);
+        responseText = "Aan het luisteren " + ".".repeat(currentDots);
         currentDots = (currentDots + 1) % (maxDots + 1);
       }, 500);
     } else if (isThinking) {
