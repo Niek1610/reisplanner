@@ -33,12 +33,12 @@ export async function POST(request) {
         console.log(JSON.stringify(volledigeRoute, null, 2))
 
         route = {
-            vertrekAdres: volledigeRoute.routes[0].legs[0].start_address,
-            aankomstAdres: volledigeRoute.routes[0].legs[0].end_address,
-            vertrektijd: volledigeRoute.routes[0].legs[0].departure_time.text,
-            aankomsttijd: volledigeRoute.routes[0].legs[0].arrival_time.text,
-            totaleAfstand: volledigeRoute.routes[0].legs[0].distance.text,
-            totaleDuur: volledigeRoute.routes[0].legs[0].duration.text,
+          vertrekAdres: volledigeRoute.routes[0].legs[0] ? volledigeRoute.routes[0].legs[0].start_address : 'N/A',
+aankomstAdres: volledigeRoute.routes[0].legs[0] ? volledigeRoute.routes[0].legs[0].end_address : 'N/A',
+vertrektijd: volledigeRoute.routes[0].legs[0] ? volledigeRoute.routes[0].legs[0].departure_time.text : 'N/A',
+aankomsttijd: volledigeRoute.routes[0].legs[0] ? volledigeRoute.routes[0].legs[0].arrival_time.text : 'N/A',
+totaleAfstand: volledigeRoute.routes[0].legs[0] ? volledigeRoute.routes[0].legs[0].distance.text : 'N/A',
+totaleDuur: volledigeRoute.routes[0].legs[0] ? volledigeRoute.routes[0].legs[0].duration.text : 'N/A',
             stappen: volledigeRoute.routes[0].legs[0].steps.map(step => {
                 // Check of de stap een treinreis of wandeling is en pas de structuur aan
                 if (step.travel_mode === "TRANSIT") {

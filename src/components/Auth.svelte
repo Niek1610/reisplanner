@@ -126,6 +126,9 @@
     align-items: center;
     flex: 1;
     padding: 5%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   form {
